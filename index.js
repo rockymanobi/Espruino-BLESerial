@@ -11,21 +11,26 @@ noble.on('discover', function(peripheral){
   console.log("device found");
   peripheral.connect(function(){
     console.log("connected");
-    
+
     peripheral.discoverServices([], function(err, services){
 
       var service = _.find( services, function(service){
-       return service.uuid === UUIDs.service;
+        return service.uuid === UUIDs.service;
       });
 
       service.discoverCharacteristics([], function(err, chars){
-        var tx = _.find(chars, function(char){
-          return char.uuid === UUIDs.tx;
-        });
+        // rx(読み込み) 
         var rx = _.find(chars, function(char){
           return char.uuid === UUIDs.rx;
         });
+        /*
+        // tx(書き込み) 
+        var tx = _.find(chars, function(char){
+        return char.uuid === UUIDs.tx;
+        });
+        */
 
+        // データを読み込んだとき = EspruinoでSerial1.writeしたとき
         rx.on('read', function(data){
           var str = data.toString('utf-8');
           if(data){
@@ -36,14 +41,18 @@ noble.on('discover', function(peripheral){
           console.error(err);
         });
 
-        setInterval(function(){
-          var msg = _.sample( ['hoge', 'aba', 'fefe', 'yeha'] );
-          var buf =  new Buffer(msg, 'utf-8');
+        /*
+           setInterval(function(){
+           var msg = _.sample( ['hoge', 'aba', 'fefe', 'yeha'] );
+           var buf =  new Buffer(msg, 'utf-8');
 
-          tx.write( buf );
+        // メッセージをEspruinoに送信
+        tx.write( buf );
         }, 2000);
+        */
 
 
+        // プログラム終了時にBLE接続を解除
         var signals = ['SIGINT', 'SIGHUP', 'SIGTERM'];
         for(var i=0; i < signals.length ; i++){
           var signal = signals[ i ];
